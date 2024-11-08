@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: php-app
+    ports:
+      - "8080:80"  # Mapeia a porta 80 do container para a porta 8080 no host
+    volumes:
+      - ./src:/var/www/html  # Mapeia o diretório local 'src' para o container
+    networks:
+      - app-network
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"  # Mapeia a porta do MySQL no container para a do host
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
