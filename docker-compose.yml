@@ -17,15 +17,20 @@ services:
     image: mysql:8
     container_name: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: mydb
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     ports:
       - "3306:3306"  # Mapeia a porta do MySQL no container para a do host
+    volumes:
+      - db_data:/var/lib/mysql  # Persistência de dados do MySQL
     networks:
       - app-network
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  db_data:  # Volume nomeado para persistência de dados do MySQL
