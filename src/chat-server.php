@@ -10,10 +10,12 @@ use Ratchet\App;
 class Chat implements MessageComponentInterface {
     protected $clients;
     protected $users;
+    protected $rooms;
 
     public function __construct() {
         $this->clients = new \SplObjectStorage;
         $this->users = [];
+        $this->rooms = [];
     }
 
     public function onOpen(ConnectionInterface $conn) {
@@ -26,6 +28,7 @@ class Chat implements MessageComponentInterface {
             return;
         }
 
+        // Validar JWT
         $token = $queryParams['token'];
         $key = "your_secret_key";
 
@@ -34,15 +37,9 @@ class Chat implements MessageComponentInterface {
             $userId = $decoded->user_id;
 
             $this->clients->attach($conn);
-            $this->users[$conn->resourceId] = $userId;
+            $this->users[$conn->resourceId] = ['user_id' => $userId, 'room_id' => null];
 
-            // Informar aos outros clientes que um novo usuário entrou
-            foreach ($this->clients as $client) {
-                $client->send(json_encode([
-                    'type' => 'user_connected',
-                    'user_id' => $userId
-                ]));
-            }
+            $conn->send(json_encode(['type' => 'welcome', 'message' => 'Conexão estabelecida']));
 
             echo "Usuário $userId conectado ({$conn->resourceId})\n";
 
@@ -53,33 +50,97 @@ class Chat implements MessageComponentInterface {
     }
 
     public function onMessage(ConnectionInterface $from, $msg) {
-        $userId = $this->users[$from->resourceId] ?? 'Anônimo';
         $data = json_decode($msg, true);
 
-        $message = [
-            'type' => 'chat_message',
-            'user_id' => $userId,
-            'message' => $data['message'] ?? ''
-        ];
+        if (!isset($data['action'])) {
+            $from->send(json_encode(['error' => 'Acao invalida']));
+            return;
+        }
 
-        foreach ($this->clients as $client) {
-            $client->send(json_encode($message));
+        switch ($data['action']) {
+            case 'create_room':
+                $this->createRoom($from, $data['room_name']);
+                break;
+
+            case 'join_room':
+                $this->joinRoom($from, $data['room_id']);
+                break;
+
+            case 'send_message':
+                $this->sendMessageToRoom($from, $data['message']);
+                break;
+
+            default:
+                $from->send(json_encode(['error' => 'Ação desconhecida']));
         }
     }
 
     public function onClose(ConnectionInterface $conn) {
-        $userId = $this->users[$conn->resourceId] ?? 'Anônimo';
+        $user = $this->users[$conn->resourceId] ?? null;
+
+        if ($user && $user['room_id']) {
+            $this->broadcastToRoom($user['room_id'], [
+                'type' => 'user_disconnected',
+                'user_id' => $user['user_id']
+            ]);
+        }
+
         unset($this->users[$conn->resourceId]);
         $this->clients->detach($conn);
 
-        foreach ($this->clients as $client) {
-            $client->send(json_encode([
-                'type' => 'user_disconnected',
-                'user_id' => $userId
-            ]));
+        echo "Conexão {$conn->resourceId} encerrada\n";
+    }
+
+    private function createRoom(ConnectionInterface $conn, $roomName) {
+        $roomId = uniqid(); // Alternativamente, use o BD para gerar IDs únicos
+        $this->rooms[$roomId] = ['name' => $roomName, 'clients' => []];
+
+        $conn->send(json_encode([
+            'type' => 'room_created',
+            'room_id' => $roomId,
+            'room_name' => $roomName
+        ]));
+
+        echo "Sala criada: $roomName ($roomId)\n";
+    }
+
+    private function joinRoom(ConnectionInterface $conn, $roomId) {
+        if (!isset($this->rooms[$roomId])) {
+            $conn->send(json_encode(['error' => 'Sala não encontrada']));
+            return;
         }
 
-        echo "Usuário $userId desconectado ({$conn->resourceId})\n";
+        $user = &$this->users[$conn->resourceId];
+        $user['room_id'] = $roomId;
+
+        $this->rooms[$roomId]['clients'][$conn->resourceId] = $conn;
+
+        $this->broadcastToRoom($roomId, [
+            'type' => 'user_joined',
+            'user_id' => $user['user_id']
+        ]);
+    }
+
+    private function sendMessageToRoom(ConnectionInterface $from, $message) {
+        $user = $this->users[$from->resourceId];
+        $roomId = $user['room_id'];
+
+        if (!$roomId) {
+            $from->send(json_encode(['error' => 'Você não está em uma sala']));
+            return;
+        }
+
+        $this->broadcastToRoom($roomId, [
+            'type' => 'chat_message',
+            'user_id' => $user['user_id'],
+            'message' => $message
+        ]);
+    }
+
+    private function broadcastToRoom($roomId, $message) {
+        foreach ($this->rooms[$roomId]['clients'] as $client) {
+            $client->send(json_encode($message));
+        }
     }
 
     public function onError(ConnectionInterface $conn, \Exception $e) {
