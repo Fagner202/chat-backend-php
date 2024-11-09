@@ -1,29 +1,33 @@
 <?php
 require_once 'vendor/autoload.php';
+require_once 'Database.php';  // Inclui a classe Database
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-
-$host = 'mysql';
-$dbname = 'mydb';
-$username = 'user';
-$password = 'password';
+use src\Database;
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $database = new Database();
+    $pdo = $database->getConnection();
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $email = $_POST['email'];
-        $password = $_POST['password'];
+        $email = $_POST['email'] ?? null;
+        $password = $_POST['password'] ?? null;
 
-        // Consultar usuário no banco de dados
+        if (!$email || !$password) {
+            http_response_code(400);
+            echo json_encode(['message' => 'Email e senha sao obrigatorios']);
+            exit;
+        }
+
+        // Consultar usuario no banco de dados
         $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['password'])) {
             // Gerar o token JWT
-            $key = "your_secret_key"; // Use uma chave secreta forte e única
+            $key = "your_secret_key"; // Use uma chave secreta forte e unica
             $payload = [
                 'iss' => "http://localhost:8080",
                 'aud' => "http://localhost:8080",
@@ -36,9 +40,13 @@ try {
             echo json_encode(['token' => $jwt]);
         } else {
             http_response_code(401);
-            echo json_encode(['message' => 'Credenciais inválidas']);
+            echo json_encode(['message' => 'Credenciais invalidas']);
         }
+    } else {
+        http_response_code(405);
+        echo json_encode(['message' => 'Metodo nao permitido']);
     }
 } catch (PDOException $e) {
-    echo "Erro de conexão: " . $e->getMessage();
+    http_response_code(500);
+    echo json_encode(['message' => 'Erro de conexao: ' . $e->getMessage()]);
 }

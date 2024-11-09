@@ -1,15 +1,12 @@
 <?php
-require_once 'vendor/autoload.php';
+require_once 'vendor/autoload.php';  // Certifique-se de que o autoload está correto
+require_once 'Database.php';         // Inclui a classe Database
 
-$host = 'mysql';
-$dbname = 'mydb';
-$username = 'user';
-$password = 'password';
+use src\Database;
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+    $database = new Database();
+    $pdo = $database->getConnection();
 } catch (PDOException $e) {
     http_response_code(500);
     die(json_encode(['message' => 'Erro ao conectar ao banco de dados: ' . $e->getMessage()]));
@@ -25,15 +22,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die(json_encode(['message' => 'Todos os campos são obrigatórios']));
     }
 
-    // Criptografa a senha
     $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-    // Insere o usuário no banco
-    $stmt = $pdo->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-    $stmt->execute([$name, $email, $hashedPassword]);
-
-    echo json_encode(['message' => 'Usuário criado com sucesso']);
+    try {
+        $stmt = $pdo->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
+        $stmt->execute([$name, $email, $hashedPassword]);
+        echo json_encode(['message' => 'Usuario criado com sucesso']);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        die(json_encode(['message' => 'Erro ao inserir usuario: ' . $e->getMessage()]));
+    }
 } else {
     http_response_code(405);
-    echo json_encode(['message' => 'Método não permitido']);
+    echo json_encode(['message' => 'Metodo nao permitido']);
 }
