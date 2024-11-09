@@ -1,6 +1,6 @@
 <?php
 require_once 'vendor/autoload.php';
-require_once 'Database.php';  // Inclui a classe Database
+require_once 'config/Database.php'; 
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
