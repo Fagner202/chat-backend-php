@@ -30,3 +30,6 @@ RUN chown -R www-data:www-data /var/www/html
 
 # Exponha a porta 80 para acessar o servidor Apache
 EXPOSE 80
+
+# Instala as dependências do Composer
+RUN composer install --no-interaction --prefer-dist

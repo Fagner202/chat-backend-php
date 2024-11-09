@@ -8,11 +8,13 @@ services:
       - "8080:80"  # Mapeia a porta 80 do container para a porta 8080 no host
     volumes:
       - ./src:/var/www/html  # Mapeia o diretório local 'src' para o container
+      - ./src/vendor:/var/www/html/vendor  # Mapeia a pasta vendor para o container (para manter as dependências do Composer)
     networks:
       - app-network
     depends_on:
       - mysql
-
+    command: bash -c "composer install && php -S 0.0.0.0:80 -t /var/www/html"  # Instala as dependências do Composer e depois inicia o servidor PHP embutido
+    
   mysql:
     image: mysql:8
     container_name: mysql

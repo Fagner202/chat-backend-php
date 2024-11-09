@@ -1,6 +1,5 @@
 <?php
-require 'vendor/autoload.php';
-
+require 'vendor/autoload.php'; // Carregar o autoloader do Composer
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use Firebase\JWT\JWT;
@@ -12,13 +11,16 @@ class Chat implements MessageComponentInterface {
     protected $users;
     protected $rooms;
 
-    public function __construct() {
+    public function __construct()
+    {
+        // Inicialização de variáveis
         $this->clients = new \SplObjectStorage;
         $this->users = [];
         $this->rooms = [];
     }
 
-    public function onOpen(ConnectionInterface $conn) {
+    public function onOpen(ConnectionInterface $conn)
+    {
         $queryParams = [];
         parse_str($conn->httpRequest->getUri()->getQuery(), $queryParams);
 
@@ -40,7 +42,6 @@ class Chat implements MessageComponentInterface {
             $this->users[$conn->resourceId] = ['user_id' => $userId, 'room_id' => null];
 
             $conn->send(json_encode(['type' => 'welcome', 'message' => 'Conexão estabelecida']));
-
             echo "Usuário $userId conectado ({$conn->resourceId})\n";
 
         } catch (\Exception $e) {
@@ -49,11 +50,12 @@ class Chat implements MessageComponentInterface {
         }
     }
 
-    public function onMessage(ConnectionInterface $from, $msg) {
+    public function onMessage(ConnectionInterface $from, $msg)
+    {
         $data = json_decode($msg, true);
 
         if (!isset($data['action'])) {
-            $from->send(json_encode(['error' => 'Acao invalida']));
+            $from->send(json_encode(['error' => 'Ação inválida']));
             return;
         }
 
@@ -75,7 +77,8 @@ class Chat implements MessageComponentInterface {
         }
     }
 
-    public function onClose(ConnectionInterface $conn) {
+    public function onClose(ConnectionInterface $conn)
+    {
         $user = $this->users[$conn->resourceId] ?? null;
 
         if ($user && $user['room_id']) {
@@ -91,8 +94,10 @@ class Chat implements MessageComponentInterface {
         echo "Conexão {$conn->resourceId} encerrada\n";
     }
 
-    private function createRoom(ConnectionInterface $conn, $roomName) {
-        $roomId = uniqid(); // Alternativamente, use o BD para gerar IDs únicos
+    private function createRoom(ConnectionInterface $conn, $roomName)
+    {
+        // Criar a sala em memória
+        $roomId = uniqid(); // Gerar um ID único para a sala
         $this->rooms[$roomId] = ['name' => $roomName, 'clients' => []];
 
         $conn->send(json_encode([
@@ -100,11 +105,11 @@ class Chat implements MessageComponentInterface {
             'room_id' => $roomId,
             'room_name' => $roomName
         ]));
-
         echo "Sala criada: $roomName ($roomId)\n";
     }
 
-    private function joinRoom(ConnectionInterface $conn, $roomId) {
+    private function joinRoom(ConnectionInterface $conn, $roomId)
+    {
         if (!isset($this->rooms[$roomId])) {
             $conn->send(json_encode(['error' => 'Sala não encontrada']));
             return;
@@ -112,7 +117,6 @@ class Chat implements MessageComponentInterface {
 
         $user = &$this->users[$conn->resourceId];
         $user['room_id'] = $roomId;
-
         $this->rooms[$roomId]['clients'][$conn->resourceId] = $conn;
 
         $this->broadcastToRoom($roomId, [
@@ -121,7 +125,8 @@ class Chat implements MessageComponentInterface {
         ]);
     }
 
-    private function sendMessageToRoom(ConnectionInterface $from, $message) {
+    private function sendMessageToRoom(ConnectionInterface $from, $message)
+    {
         $user = $this->users[$from->resourceId];
         $roomId = $user['room_id'];
 
@@ -137,13 +142,15 @@ class Chat implements MessageComponentInterface {
         ]);
     }
 
-    private function broadcastToRoom($roomId, $message) {
+    private function broadcastToRoom($roomId, $message)
+    {
         foreach ($this->rooms[$roomId]['clients'] as $client) {
             $client->send(json_encode($message));
         }
     }
 
-    public function onError(ConnectionInterface $conn, \Exception $e) {
+    public function onError(ConnectionInterface $conn, \Exception $e)
+    {
         echo "Erro: {$e->getMessage()}\n";
         $conn->close();
     }
