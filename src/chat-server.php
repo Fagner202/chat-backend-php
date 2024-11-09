@@ -3,6 +3,9 @@ require 'vendor/autoload.php';
 
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
+use Ratchet\Server\IoServer;
+use Ratchet\Http\HttpServer;
+use Ratchet\WebSocket\WsServer;
 
 class Chat implements MessageComponentInterface {
     protected $clients;
@@ -35,6 +38,15 @@ class Chat implements MessageComponentInterface {
     }
 }
 
-$server = \Ratchet\App('localhost', 8081);
-$server->route('/chat', new Chat, ['*']);
+// Iniciar o servidor WebSocket usando o novo formato
+$server = IoServer::factory(
+    new HttpServer(
+        new WsServer(
+            new Chat()
+        )
+    ),
+    8081
+);
+
+echo "Servidor WebSocket iniciado na porta 8081...\n";
 $server->run();
