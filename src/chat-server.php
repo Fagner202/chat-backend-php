@@ -1,24 +1,35 @@
 <?php
-require 'vendor/autoload.php'; // Carregar o autoloader do Composer
+require __DIR__ . '/../vendor/autoload.php'; // Ajuste o caminho conforme necessário
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Ratchet\App;
 
+/**
+ * Classe Chat que implementa a interface MessageComponentInterface do Ratchet.
+ */
 class Chat implements MessageComponentInterface {
     protected $clients;
     protected $users;
     protected $rooms;
 
+    /**
+     * Construtor da classe Chat.
+     * Inicializa as variáveis de clientes, usuários e salas.
+     */
     public function __construct()
     {
-        // Inicialização de variáveis
         $this->clients = new \SplObjectStorage;
         $this->users = [];
         $this->rooms = [];
     }
 
+    /**
+     * Método chamado quando uma nova conexão é aberta.
+     * 
+     * @param ConnectionInterface $conn A nova conexão.
+     */
     public function onOpen(ConnectionInterface $conn)
     {
         $queryParams = [];
@@ -30,7 +41,6 @@ class Chat implements MessageComponentInterface {
             return;
         }
 
-        // Validar JWT
         $token = $queryParams['token'];
         $key = "your_secret_key";
 
@@ -50,6 +60,12 @@ class Chat implements MessageComponentInterface {
         }
     }
 
+    /**
+     * Método chamado quando uma mensagem é recebida.
+     * 
+     * @param ConnectionInterface $from A conexão que enviou a mensagem.
+     * @param string $msg A mensagem recebida.
+     */
     public function onMessage(ConnectionInterface $from, $msg)
     {
         $data = json_decode($msg, true);
@@ -77,6 +93,11 @@ class Chat implements MessageComponentInterface {
         }
     }
 
+    /**
+     * Método chamado quando uma conexão é fechada.
+     * 
+     * @param ConnectionInterface $conn A conexão que foi fechada.
+     */
     public function onClose(ConnectionInterface $conn)
     {
         $user = $this->users[$conn->resourceId] ?? null;
@@ -94,9 +115,26 @@ class Chat implements MessageComponentInterface {
         echo "Conexão {$conn->resourceId} encerrada\n";
     }
 
+    /**
+     * Método chamado quando ocorre um erro na conexão.
+     * 
+     * @param ConnectionInterface $conn A conexão onde ocorreu o erro.
+     * @param \Exception $e A exceção lançada.
+     */
+    public function onError(ConnectionInterface $conn, \Exception $e)
+    {
+        echo "Erro: {$e->getMessage()}\n";
+        $conn->close();
+    }
+
+    /**
+     * Cria uma nova sala de chat.
+     * 
+     * @param ConnectionInterface $conn A conexão que solicitou a criação da sala.
+     * @param string $roomName O nome da sala a ser criada.
+     */
     private function createRoom(ConnectionInterface $conn, $roomName)
     {
-        // Criar a sala em memória
         $roomId = uniqid(); // Gerar um ID único para a sala
         $this->rooms[$roomId] = ['name' => $roomName, 'clients' => []];
 
@@ -108,6 +146,12 @@ class Chat implements MessageComponentInterface {
         echo "Sala criada: $roomName ($roomId)\n";
     }
 
+    /**
+     * Adiciona um usuário a uma sala de chat.
+     * 
+     * @param ConnectionInterface $conn A conexão do usuário.
+     * @param string $roomId O ID da sala.
+     */
     private function joinRoom(ConnectionInterface $conn, $roomId)
     {
         if (!isset($this->rooms[$roomId])) {
@@ -125,6 +169,12 @@ class Chat implements MessageComponentInterface {
         ]);
     }
 
+    /**
+     * Envia uma mensagem para todos os usuários de uma sala.
+     * 
+     * @param ConnectionInterface $from A conexão que enviou a mensagem.
+     * @param string $message A mensagem a ser enviada.
+     */
     private function sendMessageToRoom(ConnectionInterface $from, $message)
     {
         $user = $this->users[$from->resourceId];
@@ -142,17 +192,17 @@ class Chat implements MessageComponentInterface {
         ]);
     }
 
+    /**
+     * Envia uma mensagem para todos os clientes de uma sala.
+     * 
+     * @param string $roomId O ID da sala.
+     * @param array $message A mensagem a ser enviada.
+     */
     private function broadcastToRoom($roomId, $message)
     {
         foreach ($this->rooms[$roomId]['clients'] as $client) {
             $client->send(json_encode($message));
         }
-    }
-
-    public function onError(ConnectionInterface $conn, \Exception $e)
-    {
-        echo "Erro: {$e->getMessage()}\n";
-        $conn->close();
     }
 }
 
