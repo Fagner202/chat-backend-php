@@ -1,69 +1,104 @@
-Projeto PHP com Docker, MySQL e WebSocket
-Este projeto é uma aplicação web em PHP que utiliza Docker para containerização, MySQL como banco de dados e Ratchet para comunicação em tempo real via WebSocket. A aplicação inclui autenticação JWT, gerenciamento de usuários e um sistema de chat em tempo real.
+# Chat Backend PHP com Docker, MySQL e WebSocket
 
-Tecnologias Utilizadas
-PHP 8.2 com Apache
-MySQL 8
-Composer para gerenciamento de dependências PHP
-Ratchet para implementação de WebSockets em PHP
-Firebase JWT para autenticação JSON Web Token
-Docker e Docker Compose para containerização
-Como Iniciar o Projeto
-Siga os passos abaixo para configurar e executar o projeto:
+Este projeto é uma aplicação web desenvolvida em **PHP** que utiliza **Docker** para containerização, **MySQL** como banco de dados e **Ratchet** para comunicação em tempo real via **WebSocket**. A aplicação inclui funcionalidades de **autenticação JWT**, **gerenciamento de usuários** e um **sistema de chat em tempo real**.
 
-Pré-requisitos:
+## 🛠️ Tecnologias Utilizadas
 
-Ter o Docker e o Docker Compose instalados em sua máquina.
-Opcionalmente, ter o Git instalado para clonar o repositório.
-Clonar o Repositório:
+- **PHP 8.2 com Apache**: Linguagem de programação e servidor web.
+- **MySQL 8**: Banco de dados relacional.
+- **Composer**: Gerenciador de dependências para PHP.
+- **Ratchet**: Biblioteca para implementação de WebSockets.
+- **Firebase JWT**: Autenticação via JSON Web Token.
+- **Docker e Docker Compose**: Containerização e orquestração.
 
-git clone [https://github.com/Fagner202/chat-backend-php.git]
-cd [chat-backend-php]
+## 🚀 Como Iniciar o Projeto
 
-Configurar Variáveis de Ambiente:
+### Pré-requisitos
 
-Crie um arquivo .env se necessário, contendo as configurações de ambiente, como credenciais do banco de dados e chaves secretas para JWT.
-Construir e Iniciar os Containers:
+Antes de começar, certifique-se de ter as seguintes ferramentas instaladas:
 
-No diretório do projeto, execute:
-docker-compose up -d
+- **Docker** e **Docker Compose**.
+- **Git** (opcional, para clonar o repositório).
 
-Isso construirá as imagens e iniciará os serviços definidos no docker-compose.yml.
-Instalar Dependências do Composer:
+### Passo 1: Clonar o Repositório
+
+Para obter o código do projeto, execute os seguintes comandos:
+
+```bash
+git clone https://github.com/Fagner202/chat-backend-php.git
+cd chat-backend-php
+```
+
+### Passo 2: Construir e Iniciar os Containers
+```bash	
+docker compose up -d
+```
+Construir as imagens Docker.
+Iniciar os containers conforme definido no arquivo docker-compose.yml.
+
+### Passo 3: Instalar Dependências do Composer
 
 Acesse o terminal do container da aplicação:
+
+```bash	
 docker exec -it php-app bash
+```	
+Dentro do container, instale as dependências do projeto
 
-Dentro do container, instale as dependências:
+```bash	
 composer install
+```
 
-Saia do container:
+Após a instalação, saia do container
+
+```bash	
 exit
+```
 
-Migrar o Banco de Dados:
+### Passo 4: Migrar o Banco de Dados
 
-Configure o banco de dados, criando as tabelas necessárias. Isso pode ser feito via scripts SQL ou utilizando ferramentas de migração.
-Iniciar o Servidor de Chat:
+Crie as tabelas necessárias no banco de dados. Isso pode ser feito utilizando scripts SQL ou ferramentas de migração.
 
-docker exec -it php-app php chat-server.php
+### Passo 5: Passo 6: Iniciar o Servidor de Chat
 
-O servidor estará escutando na porta 8081.
-Acessar a Aplicação:
+```bash	
+docker exec -it php-app bash
+```
 
-A aplicação web estará disponível em http://localhost:8080.
-Endpoints da API
-POST /api/login: Autenticação de usuários.
-POST /api/register: Registro de novos usuários.
-GET /api/users: Listar usuários cadastrados.
-PUT /api/users/update: Atualizar informações de um usuário.
-DELETE /api/users/delete: Remover um usuário.
+O servidor estará rodando na porta 8081.
 
-Funcionalidades Principais
-Autenticação JWT: Segurança nas requisições através de tokens JWT.
-Gerenciamento de Usuários: Criação, leitura, atualização e exclusão de usuários.
-Chat em Tempo Real: Sistema de chat utilizando WebSockets, permitindo criação de salas e comunicação entre múltiplos usuários.
-Containerização com Docker: Fácil implantação e escalabilidade através de containers Docker.
-Observações
-Certifique-se de que as portas 8080 e 8081 não estejam sendo utilizadas por outros serviços em sua máquina.
-Os dados do banco de dados serão persistidos no volume db_data, definido no docker-compose.yml.
-Personalize as configurações conforme necessário, especialmente as chaves secretas e credenciais.
+## 📚 Endpoints da API
+Autenticação
+POST /api/login
+Realiza a autenticação de um usuário.
+
+POST /api/register
+Registra um novo usuário.
+
+Usuários
+GET /api/users
+Lista todos os usuários cadastrados.
+
+PUT /api/users/update
+Atualiza as informações de um usuário.
+
+DELETE /api/users/delete
+Remove um usuário do sistema.
+
+## ⚙️ Funcionalidades Principais
+Autenticação JWT
+Garante a segurança nas requisições através de tokens.
+
+Gerenciamento de Usuários
+Permite a criação, leitura, atualização e exclusão de usuários.
+
+Chat em Tempo Real
+Sistema de chat baseado em WebSockets, com suporte à criação de salas e comunicação entre múltiplos usuários.
+
+Containerização com Docker
+Facilita a implantação e escalabilidade, garantindo a consistência do ambiente de desenvolvimento e produção.
+
+## 📝 Observações
+Certifique-se de que as portas 8080 e 8081 estão disponíveis em sua máquina antes de iniciar os containers.
+Os dados do banco de dados serão armazenados em um volume Docker chamado db_data, garantindo a persistência.
+Personalize as chaves secretas e credenciais conforme necessário no arquivo .env.
