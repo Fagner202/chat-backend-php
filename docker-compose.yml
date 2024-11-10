@@ -9,6 +9,7 @@ services:
     volumes:
       - ./src:/var/www/html  # Mapeia o diretório local 'src' para o container
       - ./vendor:/var/www/html/vendor  # Mapeia a pasta vendor para o container (para manter as dependências do Composer)
+      - ./composer.json:/var/www/html/composer.json  # Mapeia o arquivo composer.json para o container
     networks:
       - app-network
     depends_on:
