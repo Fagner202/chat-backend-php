@@ -12,11 +12,22 @@ class AuthController {
     private $pdo;
     private $key = "your_secret_key"; // Melhor se extraído de uma variável de ambiente
 
+    /**
+     * Construtor da classe AuthController.
+     * Inicializa a conexão com o banco de dados.
+     */
     public function __construct() {
-        $database = new Database();
+        $database = new Database('production');
         $this->pdo = $database->getConnection();
     }
 
+    /**
+     * Método para realizar o login de um usuário.
+     * 
+     * @param string $email Email do usuário.
+     * @param string $password Senha do usuário.
+     * @return array Mensagem de sucesso ou erro com o token JWT.
+     */
     public function login($email, $password) {
         if (!$email || !$password) {
             http_response_code(400);
@@ -35,7 +46,6 @@ class AuthController {
                 'exp' => time() + (60 * 60), // 1 hora
                 'user_id' => $user['id']
             ];
-            // $jwt = JWT::encode($payload, $key, 'HS256');
             $jwt = JWT::encode($payload, $this->key, 'HS256');
             return ['token' => $jwt];
         } else {

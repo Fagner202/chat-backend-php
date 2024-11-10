@@ -5,22 +5,17 @@ require_once 'vendor/autoload.php';
 require_once 'config/Database.php';
 
 use src\Database;
-use src\models\User;
 
 class RegisterController
 {
+    /**
+     * Método para registrar um novo usuário.
+     * 
+     * @param array $data Dados do usuário a ser registrado.
+     * @return string Mensagem de sucesso ou erro em formato JSON.
+     */
     public function register($data)
     {
-
-        // // Verifica se a classe User existe
-        // if (!class_exists(User::class)) {
-        //     http_response_code(500);
-        //     return json_encode(['message' => 'Model User nao encontrado']);
-        // }
-
-        // Instancia a classe User
-        // $user = new User();
-
         $name = $data['name'] ?? null;
         $email = $data['email'] ?? null;
         $password = $data['password'] ?? null;
@@ -34,15 +29,7 @@ class RegisterController
         // Criptografa a senha
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-        
-        // Chama o método para criar o usuário
-        // return $user->createUser($name, $email, $hashedPassword);
-
-        // até o presente momento não estamos conseguindo extensiar a model du User, então 
-        // por hora vamos fazer a crição do usuario diretamente pela controller, vamos usar nossa classe Database
-        // para conectar ao banco de dados
-
-        $database = new Database();
+        $database = new Database('production');
         $pdo = $database->getConnection();
 
         try {
@@ -53,8 +40,5 @@ class RegisterController
             http_response_code(500);
             return json_encode(['message' => 'Erro ao inserir usuário: ' . $e->getMessage()]);
         }
-
-
-
     }
 }
