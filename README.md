@@ -62,7 +62,8 @@ Crie as tabelas necessárias no banco de dados. Isso pode ser feito utilizando s
 ### Passo 5: Passo 6: Iniciar o Servidor de Chat
 
 ```bash	
-docker exec -it php-app bash
+cd src
+php chat-server.php
 ```
 
 O servidor estará rodando na porta 8081.
