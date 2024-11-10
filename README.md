@@ -68,6 +68,13 @@ php chat-server.php
 
 O servidor estará rodando na porta 8081.
 
+### obter como usar o chat
+
+1. Criar um novo usuário com a rota POST /api/register
+2. Autenticar o usuário com a rota POST /api/login
+3. Acessar o chat com a rota ws://localhost:8081/chat?token=<token gerado na rota POST /api/login>
+
+
 ## 📚 Endpoints da API
 Autenticação
 POST /api/login
