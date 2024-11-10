@@ -6,6 +6,30 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Ratchet\App;
 
+    // 1.
+    // {
+    // "action": "create_room",
+    // "room_name": "Sala de Teste"
+    // }
+
+    // 2.
+    // {
+    // "action": "join_room",
+    // "room_id": "unique_room_id"
+    // }
+
+    // 3.
+    // {
+    // "action": "send_message",
+    // "message": "Olá, sala!"
+    // }
+
+    // 4.
+    // {
+    // "type": "user_disconnected",
+    // "user_id": "user_id"
+    // }
+
 /**
  * Classe Chat que implementa a interface MessageComponentInterface do Ratchet.
  */
