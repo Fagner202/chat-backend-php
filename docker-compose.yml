@@ -8,7 +8,7 @@ services:
       - "8080:80"  # Mapeia a porta 80 do container para a porta 8080 no host
     volumes:
       - ./src:/var/www/html  # Mapeia o diretório local 'src' para o container
-      - ./src/vendor:/var/www/html/vendor  # Mapeia a pasta vendor para o container (para manter as dependências do Composer)
+      - ./vendor:/var/www/html/vendor  # Mapeia a pasta vendor para o container (para manter as dependências do Composer)
     networks:
       - app-network
     depends_on:

@@ -19,8 +19,20 @@ RUN apt-get update && apt-get install -y \
 RUN curl -sS https://getcomposer.org/installer | php && \
     mv composer.phar /usr/local/bin/composer
 
+# Instala PHPUnit
+RUN composer global require phpunit/phpunit --prefer-dist
+
+# Adiciona o caminho dos binários globais do Composer ao PATH
+ENV PATH="/root/.composer/vendor/bin:${PATH}"
+
 # Defina o diretório de trabalho para o Apache
 WORKDIR /var/www/html
+
+# Copie o arquivo composer.json e composer.lock para o diretório de trabalho
+COPY composer.json composer.lock /var/www/html/
+
+# Instala as dependências do Composer
+RUN composer install --no-interaction --prefer-dist
 
 # Copie o código da aplicação PHP para o container
 COPY src/ /var/www/html/
@@ -30,6 +42,3 @@ RUN chown -R www-data:www-data /var/www/html
 
 # Exponha a porta 80 para acessar o servidor Apache
 EXPOSE 80
-
-# Instala as dependências do Composer
-RUN composer install --no-interaction --prefer-dist
