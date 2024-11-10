@@ -13,7 +13,7 @@ class AuthController {
     private $key = "your_secret_key"; // Melhor se extraído de uma variável de ambiente
 
     public function __construct() {
-        $database = new Database();
+        $database = new Database('production');
         $this->pdo = $database->getConnection();
     }
 

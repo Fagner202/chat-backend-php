@@ -42,7 +42,7 @@ class RegisterController
         // por hora vamos fazer a crição do usuario diretamente pela controller, vamos usar nossa classe Database
         // para conectar ao banco de dados
 
-        $database = new Database();
+        $database = new Database('production');
         $pdo = $database->getConnection();
 
         try {

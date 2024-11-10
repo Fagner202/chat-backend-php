@@ -8,7 +8,7 @@ class UserController {
     private $pdo;
 
     public function __construct() {
-        $database = new \src\Database();
+        $database = new \src\Database('production');
         $this->pdo = $database->getConnection();
     }
 
