@@ -1,12 +1,13 @@
 <?php
-
 require_once 'config/Database.php';
 require_once 'controllers/AuthController.php';
-require_once 'controllers/RegisterController.php'; // Incluindo o controlador de registro
+require_once 'controllers/RegisterController.php';
+require_once 'controllers/UserController.php'; // Incluindo o controlador de usuários
 
 // Captura a URL solicitada
 $requestUri = $_SERVER['REQUEST_URI'];
 
+// Roteamento das requisições para os controladores apropriados
 switch ($requestUri) {
     case '/api/login':
         // Lógica de autenticação
@@ -26,6 +27,33 @@ switch ($requestUri) {
             $data = json_decode(file_get_contents('php://input'), true); // Pega os dados no formato JSON
             $response = $registerController->register($data); // Chama o método register no controller
             echo $response; // Retorna a resposta
+        }
+        break;
+
+    // Rotas para usuários
+    case '/api/users':
+        $userController = new src\controllers\UserController();
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $response = $userController->getUsers();
+            echo json_encode($response);
+        }
+        break;
+        
+    case '/api/users/update':
+        $userController = new src\controllers\UserController();
+        if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
+            parse_str(file_get_contents("php://input"), $put_vars);
+            $response = $userController->updateUser($put_vars);
+            echo json_encode($response);
+        }
+        break;
+
+    case '/api/users/delete':
+        $userController = new src\controllers\UserController();
+        if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
+            parse_str(file_get_contents("php://input"), $delete_vars);
+            $response = $userController->deleteUser($delete_vars);
+            echo json_encode($response);
         }
         break;
 
