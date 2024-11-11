@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/../vendor/autoload.php'; // Ajuste o caminho conforme necessário
+require __DIR__ . '/vendor/autoload.php'; // Ajuste o caminho conforme necessário
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use Firebase\JWT\JWT;
@@ -230,6 +230,6 @@ class Chat implements MessageComponentInterface {
     }
 }
 
-$server = new App('localhost', 8081); // Use 'new App' para criar uma instância.
+$server = new App('0.0.0.0', 8081); // Use 'new App' para criar uma instância.
 $server->route('/chat', new Chat(), ['*']);
 $server->run();

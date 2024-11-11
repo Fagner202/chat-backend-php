@@ -6,6 +6,7 @@ services:
     container_name: php-app
     ports:
       - "8080:80"  # Mapeia a porta 80 do container para a porta 8080 no host
+      - "8081:8081" # Porta para o servidor WebSocket
     volumes:
       - ./src:/var/www/html  # Mapeia o diretório local 'src' para o container
       - ./vendor:/var/www/html/vendor  # Mapeia a pasta vendor para o container (para manter as dependências do Composer)
